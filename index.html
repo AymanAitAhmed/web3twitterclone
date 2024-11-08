@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Twitter Web3 Clone</title>
+    <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+    <style>
+        /* General Reset and Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f5f8fa;
+            color: #333;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            color: #1da1f2;
+            margin-right: 15px;
+        }
+
+        .logo {
+            width: 150px;
+            height: 150px;
+            clip-path: circle();
+        }
+
+        /* Container Styles */
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Connect Wallet Button */
+        #connectWalletBtn {
+            background-color: #1da1f2;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin-top: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            position: relative;
+            transition: background-color 0.3s ease;
+        }
+
+        #connectWalletBtn.connected {
+            background-color: #28a745;
+        }
+
+        #connectWalletBtn.connected::after {
+            content: "✅";
+            color: white;
+            font-size: 1.2rem;
+            margin-left: 8px;
+        }
+
+        .wallet-address {
+            display: none;
+            position: absolute;
+            bottom: -25px;
+            left: 0;
+            font-size: 0.8rem;
+            color: #555;
+            background-color: #f1f1f1;
+            padding: 2px 5px;
+            border-radius: 5px;
+            white-space: nowrap;
+        }
+
+        #connectWalletBtn.connected:hover .wallet-address {
+            display: inline;
+        }
+
+        /* Other Styles (Existing) */
+        .button {
+            background-color: #1da1f2;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin-top: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s ease;
+        }
+
+        .button:hover {
+            background-color: #0a8fd9;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .feed, .post {
+            margin-top: 20px;
+        }
+
+        .button {
+            background-color: #1da1f2;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin-top: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s ease;
+        }
+
+        .button:hover {
+            background-color: #0a8fd9;
+        }
+
+        .textarea {
+            width: 100%;
+            height: 120px;
+            padding: 10px;
+            font-size: 1rem;
+            border: 1px solid #e1e8ed;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-family: 'Arial', sans-serif;
+        }
+
+        .post-card {
+            background-color: #ffffff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .post-card p {
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+        }
+
+        .post-card .author {
+            font-weight: bold;
+        }
+
+        .post-card .likes, .post-card .dislikes {
+            font-size: 1.1rem;
+        }
+
+        .post-card .edit-btn {
+            background-color: #ffad1f;
+            color: white;
+            font-size: 0.9rem;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            border: none;
+            transition: background-color 0.3s ease;
+        }
+
+        .post-card .edit-btn:hover {
+            background-color: #e49318;
+        }
+
+        /* Responsive Styles */
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+
+            .button {
+                width: 100%;
+            }
+
+            .textarea {
+                height: 100px;
+            }
+        }
+
+        .feed {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .post-card {
+        background-color: #ffffff;
+        border: 1px solid #e1e8ed;
+        border-radius: 8px;
+        padding: 15px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        font-family: 'Arial', sans-serif;
+    }
+
+    .post-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 0.9rem;
+        color: #555;
+    }
+
+    .author {
+        font-weight: bold;
+        color: #1da1f2;
+    }
+
+    .username {
+        color: #8899a6;
+    }
+
+    .message {
+        font-size: 1rem;
+        color: #333;
+        margin: 10px 0;
+        line-height: 1.4;
+    }
+
+    .post-footer {
+        display: flex;
+        align-items: center;
+        gap: 15px; /* Adjust spacing between like and dislike icons */
+        font-size: 1.2rem; /* Make the icons slightly larger */
+        color: #8899a6;
+    }
+
+    .icon {
+        cursor: pointer;
+    }
+
+    .icon:hover {
+        color: #1da1f2;
+    }
+
+    /* Post Button in Bottom Right Corner */
+    .post-button-container {
+            padding: 10px 20px 30px 90%;
+            bottom: 20px;
+            right: 20px;
+        }
+
+        .post-button {
+            background-color: #1da1f2;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1.5rem;
+            transition: background-color 0.3s ease;
+        }
+
+        .post-button:hover {
+            background-color: #0a8fd9;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <img src="twitter clone logo.webp" alt="Logo" class="logo">
+        <h1>Twitter Web3 Clone</h1>
+    </div>
+
+    <br/>
+
+    <div class="container">
+    
+         <button id="connectWalletBtn" class="button" onclick="connectWallet()">Connect Wallet</button>
+        <span class="wallet-address" id="walletAddress"></span>
+
+        <br></br>
+
+        <h2>Add a New Post</h2>
+        <textarea id="postMessage" class="textarea" placeholder="What's on your mind?" maxlength="140"></textarea>
+        <!-- Post Button in Bottom Right Corner -->
+        <div class="post-button-container">
+            <button class="post-button" onclick="addPost()">Post</button>
+        </div>        
+        <br></br>
+
+        <h2>Feed</h2>
+        <div id="feed" class="feed"></div>
+    </div>
+
+    <script type="text/javascript">
+        let web3;
+        let contract;
+        const contractAddress = '0x99bbA657f2BbC93c02D617f8bA121cB8Fc104Acf';  // Replace with your deployed contract address
+        const abi = [
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "uint256",
+				"name": "postId",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "content",
+				"type": "string"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "commenter",
+				"type": "address"
+			}
+		],
+		"name": "CommentAddedEvent",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "uint256",
+				"name": "postId",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "message",
+				"type": "string"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "author",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "timestamp",
+				"type": "uint256"
+			}
+		],
+		"name": "NewPostEvent",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "uint256",
+				"name": "postId",
+				"type": "uint256"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "disliker",
+				"type": "address"
+			}
+		],
+		"name": "PostDislikedEvent",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "uint256",
+				"name": "postId",
+				"type": "uint256"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "liker",
+				"type": "address"
+			}
+		],
+		"name": "PostLikedEvent",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "uint256",
+				"name": "postId",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "newMessage",
+				"type": "string"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "lastModified",
+				"type": "uint256"
+			}
+		],
+		"name": "PostUpdatedEvent",
+		"type": "event"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_postId",
+				"type": "uint256"
+			},
+			{
+				"internalType": "string",
+				"name": "_content",
+				"type": "string"
+			}
+		],
+		"name": "addComment",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_postId",
+				"type": "uint256"
+			}
+		],
+		"name": "dislikePost",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_postId",
+				"type": "uint256"
+			},
+			{
+				"internalType": "string",
+				"name": "_newMessage",
+				"type": "string"
+			}
+		],
+		"name": "editPost",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_postId",
+				"type": "uint256"
+			}
+		],
+		"name": "getPost",
+		"outputs": [
+			{
+				"internalType": "string",
+				"name": "",
+				"type": "string"
+			},
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_postId",
+				"type": "uint256"
+			}
+		],
+		"name": "getPostComments",
+		"outputs": [
+			{
+				"components": [
+					{
+						"internalType": "address",
+						"name": "author",
+						"type": "address"
+					},
+					{
+						"internalType": "string",
+						"name": "content",
+						"type": "string"
+					},
+					{
+						"internalType": "uint256",
+						"name": "numLikes",
+						"type": "uint256"
+					}
+				],
+				"internalType": "struct MiniSocial.Comment[]",
+				"name": "",
+				"type": "tuple[]"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "getTotalPosts",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_postId",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_commentId",
+				"type": "uint256"
+			}
+		],
+		"name": "likeComment",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_postId",
+				"type": "uint256"
+			}
+		],
+		"name": "likePost",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "string",
+				"name": "_message",
+				"type": "string"
+			}
+		],
+		"name": "publishPost",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	}
+]
+
+        
+        async function connectWallet() {
+            if (window.ethereum) {
+                web3 = new Web3(window.ethereum);
+                await window.ethereum.request({ method: 'eth_requestAccounts' });
+                const account = (await web3.eth.getAccounts())[0];
+                    // Update button and address display
+                    const connectWalletBtn = document.getElementById('connectWalletBtn');
+                    connectWalletBtn.classList.add('connected');
+                    connectWalletBtn.innerText = "Wallet Connected";
+                    document.getElementById('walletAddress').innerText = account;
+                contract = new web3.eth.Contract(abi, contractAddress);
+                loadPosts();
+            } else {
+                alert('Please install MetaMask to use this app.');
+            }
+        }
+
+        async function loadPosts() {
+            try {
+                const postCount = Number(await contract.methods.getTotalPosts().call());
+                const feedDiv = document.getElementById('feed');
+                feedDiv.innerHTML = '';
+
+                const account = (await web3.eth.getAccounts())[0];
+                for (let i = 0; i < postCount; i++) {
+                    const post = await contract.methods.getPost(i).call();
+                    const postDate = new Date(Number(post[4]) * 1000).toLocaleString();
+                    const modifiedDate = post[5] > 0 ? new Date(Number(post[5]) * 1000).toLocaleString() : 'Never';
+
+                    const postDiv = document.createElement('div');
+                postDiv.classList.add('post-card');
+                postDiv.innerHTML = `
+                    <div class="post-header">
+                        <span class="author">${post[1]}</span>
+                        <span class="username">@username • ${postDate}</span>
+                    </div>
+                    <p class="message">${post[0]}</p>
+                    <div class="post-footer">
+                        <span class="icon" onclick="likePost(${i})">❤️ ${Number(post[2])}</span>
+                        <span class="icon" onclick="dislikePost(${i})">👎 ${Number(post[3])}</span>
+                    </div>
+                `;
+                feedDiv.appendChild(postDiv);
+
+                if (account === post[1]) {
+                        postDiv.innerHTML += `
+                            <textarea id="editMessage${i}" placeholder="Edit your post...">${post[0]}</textarea>
+                            <button class="button" onclick="editPost(${i})">Save Changes</button>
+                        `;
+                    }
+                }
+            } catch (error) {
+                console.error("Error loading posts:", error);
+            }
+        }
+
+        async function addPost() {
+            try {
+                const message = document.getElementById('postMessage').value;
+                const account = (await web3.eth.getAccounts())[0];
+                await contract.methods.publishPost(message).send({ from: account });
+                document.getElementById('postMessage').value = '';
+                loadPosts();
+            } catch (error) {
+                console.error("Error adding post:", error);
+            }
+        }
+
+        async function likePost(postId) {
+            try {
+                const account = (await web3.eth.getAccounts())[0];
+                await contract.methods.likePost(postId).send({ from: account });
+                loadPosts();
+            } catch (error) {
+                alert("You have already liked this post.");
+            }
+        }
+
+        async function dislikePost(postId) {
+            try {
+                const account = (await web3.eth.getAccounts())[0];
+                await contract.methods.dislikePost(postId).send({ from: account });
+                loadPosts();
+            } catch (error) {
+                alert("You have already disliked this post.");
+            }
+        }
+
+        async function editPost(postId) {
+            try {
+                const newMessage = document.getElementById(`editMessage${postId}`).value;
+                if(newMessage === ""){
+                    alert("Edit cannot be empty")
+                    return
+                }
+                const account = (await web3.eth.getAccounts())[0];
+                await contract.methods.editPost(postId, newMessage).send({ from: account });
+                loadPosts();
+            } catch (error) {
+                console.error("Error editing post:", error);
+            }
+        }
+    </script>
+</body>
+</html>
